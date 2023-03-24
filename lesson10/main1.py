@@ -1,3 +1,4 @@
+from numpy import delete
 import telebot
 from telebot import types
 import requests
@@ -17,42 +18,6 @@ def show_cities(message):
         button = types.InlineKeyboardButton(cities_list[i], callback_data=cities_list[i])
         markup_inline.add(button)
     right = types.InlineKeyboardButton('=>', callback_data='right_button')
-    left = types.InlineKeyboardButton('<=', callback_data='left_button')
-    markup_inline.add(left, right)
-    bot.send_message(message.chat.id, 'Выберите город', reply_markup=markup_inline)
-
-def go_forward(message):
-    global current_point, end_point
-    current_point += 10
-    end_point += 10
-    markup_inline = types.InlineKeyboardMarkup()
-    cities_list = open('cities_file.txt', 'r').read().split(',')
-    if(current_point >= len(cities_list)):
-        current_point = 0
-        end_point = 10
-    if(end_point >= len(cities_list)):
-        end_point = len(cities_list)
-    for i in range(current_point, end_point):
-        button = types.InlineKeyboardButton(cities_list[i], callback_data=cities_list[i])
-        markup_inline.add(button)
-        right = types.InlineKeyboardButton('=>', callback_data='right_button')
-    left = types.InlineKeyboardButton('<=', callback_data='left_button')
-    markup_inline.add(left, right)
-    bot.send_message(message.chat.id, 'Выберите город', reply_markup=markup_inline)
-
-def go_back(message):
-    global current_point, end_point
-    current_point -= 10
-    end_point -= 10
-    markup_inline = types.InlineKeyboardMarkup()
-    cities_list = open('cities_file.txt', 'r').read().split(',')
-    if(current_point < 0):
-        end_point = len(cities_list)
-        current_point = end_point - 10
-    for i in range(current_point, end_point):
-        button = types.InlineKeyboardButton(cities_list[i], callback_data=cities_list[i])
-        markup_inline.add(button)
-        right = types.InlineKeyboardButton('=>', callback_data='right_button')
     left = types.InlineKeyboardButton('<=', callback_data='left_button')
     markup_inline.add(left, right)
     bot.send_message(message.chat.id, 'Выберите город', reply_markup=markup_inline)

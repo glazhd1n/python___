@@ -9,11 +9,11 @@ def getMoney(currency):
     lbl = Label(root, text=f'EUR {eur}\nUSD {usd}\n RUB {rub}')
     lbl.grid(row=6, columnspan=5)
 
-a = requests.get('https://api.freecurrencyapi.com/v1/latest?apikey=2YdhWYt4Jge9Xo712ykDOdFabVcZ5jV3925lG4YL')
-a = a.json()['data']
-c = []
-for i, j in a.items():
-    c.append(i)
+# a = requests.get('https://api.freecurrencyapi.com/v1/latest?apikey=2YdhWYt4Jge9Xo712ykDOdFabVcZ5jV3925lG4YL')
+# a = a.json()['data']
+c = ['Hello World', 'Ayakoz', 'Aiken']
+# for i, j in a.items():
+    # c.append(i)
 
 root = Tk()
 options = StringVar(root)
