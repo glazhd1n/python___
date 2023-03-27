@@ -52,7 +52,7 @@ class PhoneBook:
     def deleteUser(self, phone_number):
         file = open('users.csv', 'r').read()
         if not phone_number in file:
-            return
+            return False
         file = file.split('\n')
         file.pop()
         for i in range(len(file)):
@@ -63,6 +63,7 @@ class PhoneBook:
             writer = csv.writer(fake_db)
             for i in file:
                 writer.writerow(i.split(','))
+        return True
 
     def edit_user(self, name, new_name='', new_phone_number='', new_birthday='', new_country=''):
         for user in self.Users:
@@ -77,6 +78,7 @@ class PhoneBook:
                     user.country = new_country
                 break
         self.rewrite_all_users()
+
     def rewrite_all_users(self):
         with open('users.csv', 'w') as fake_db:
             writer = csv.writer(fake_db)
@@ -92,11 +94,62 @@ class PhoneBook:
             user = User(*i.split(','))
             self.addUser(user)
 
+    def isNameInUsers(self, name):
+        for i in self.Users:
+            if (name == i.full_name):
+                return True
+        return False
 
 
 pb = PhoneBook()
 
-pb.edit_user(name='hjsfgjh', new_country='Sweden')
-pb.edit_user('Sabir', new_country='USA')
-pb.edit_user('Adelya', new_country='German')
-pb.printUsers()
+while 1:
+    try:
+        pb.printUsers()
+        print('\n\n')
+    except:
+        pass
+    command = input('Введите 1 для того чтобы добавить контакт\nВведите 2 для того чтобы удалить контакт\nВведите 3 для того чтобы отредактировать контакт\nВведите 4 для того чтобы завершить программу\n - ')
+    if(command == '1'):
+        name = input('Введите Имя - ')
+        phone_number = input('Введите номер телефона - ')
+        birthday = input('Введите день рождения - ')
+        country = input('Введите страну проживания - ')
+        new_user = User(name, phone_number, birthday, country)
+        pb.addUser(new_user)
+    elif command == '2':
+        phone_number = input('Введите номер телефона человека, которого вы хотите удалить\n - ')
+        if not pb.deleteUser(phone_number):
+            print('Вы ввели не корректный номер')
+            continue
+        print('Контакт удален')
+    elif command == '3':
+        print('Введите имя человека')
+        name = input()
+        if not pb.isNameInUsers(name):
+            print('Человека с таким именем к сожалению нет')
+            continue
+        cmnd = input('Введите 1 чтобы обновить имя\nВведите 2 чтобы обновить номер телефона\nВведите 3 чтобы обновить день рождения\nВведите 4 чтобы обновить страну\n - ')
+        if cmnd == '1':
+            new_name = input('Введите новое имя\n- ')
+            pb.edit_user(name, new_name=new_name)
+        elif cmnd == '2':
+            phone_number = input('Введите новый номер телефона\n- ')
+            pb.edit_user(name, new_phone_number=phone_number)
+        elif cmnd == '3':
+            birthday = input('Введите новый день рождения')
+            pb.edit_user(name, new_birthday=birthday)
+        elif cmnd == '4':
+            country = input()
+            pb.edit_user(name, new_country=country)
+        else:
+            print('Выберите правильную комманду')
+            continue
+        print('Контакт изменен')
+
+    elif command == '4':
+        print('Всего доброго!')
+        exit()
+    else:
+        print('Введите корректную комманду')
+    print('\n\n\n')
