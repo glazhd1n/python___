@@ -1,0 +1,11 @@
+{
+    "students": {
+        "sabir": {
+            "password": "123",
+            "some data": "Hello World"
+        },
+        "123": {
+            "password": "12345"
+        }
+    }
+}
