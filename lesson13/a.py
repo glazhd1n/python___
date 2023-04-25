@@ -1,10 +1,8 @@
 import requests
 from bs4 import BeautifulSoup
 import csv
-import pandas as pd
 import telebot
 from telebot import types
-import dataframe_image as dfi
 from datetime import datetime
 
 bot = telebot.TeleBot('6165404922:AAHg7bUiRP5Ism12SssmJ1mOOWLKB_Argys')
@@ -75,7 +73,9 @@ def handle_location(message):
     for i, j in coordinates.items():
         end_location = j
         url = f'https://api.tomtom.com/routing/1/calculateRoute/{start_location}:{end_location}/json?key={api_key}'
+
         response = requests.get(url)
+
         if response.status_code == 200:
             # Success! The response content is in JSON format.
             json_response = response.json()
@@ -86,28 +86,48 @@ def handle_location(message):
 
     bot.send_message(message.chat.id, f'Ближайшая станция - {station}')
 
-
+@bot.callback_query_handler(func=lambda call: True)
+def answer_to_callback(call):
+    if call.data == 'continue':
+        keyboard = telebot.types.ReplyKeyboardMarkup(True)
+        keyboard.add('<- Назад')
+        for i in get_time():
+            keyboard.add(i[0])
+        bot.reply_to(call.message, 'Выберите станцию',reply_markup=keyboard)
+    elif call.data == 'end':
+        name = call.from_user.first_name
+        bot.send_message(call.message.chat.id, f'До свидания {name} \n\n\nСпасибо за использование нашего бота!')
 
 @bot.message_handler()
 def get_messages(message):
-    for i in get_time():
-        if message.text == i[0]:
-            time = datetime.now()
-            time1 = i[1]
-            time2 = i[2]
-            if len(time1) == 0:
-                time1 = "Конечная"
-            if len(time2) == 0:
-                time2 = 'Конечная'
-            bot.send_message(message.chat.id, f'Расписание на время - {time.strftime("%H:%M:%S")}\n\n\nСтанция - {i[0]}\nОт {i[0]} До Бауыржан Момышулы:\n{time1}\n\nОт {i[0]} До Райымбек Батыра:\n{time2}')
-            
-        
+    try:
+        for i in get_time():
+            if message.text == i[0]:
+                time = datetime.now()
+                time1 = i[1]
+                time2 = i[2]
+                keyboard = telebot.types.InlineKeyboardMarkup()
+                button1 = telebot.types.InlineKeyboardButton('Продолжить', callback_data='continue')
+                button2 = telebot.types.InlineKeyboardButton('Закончить', callback_data='end')
+                keyboard.add(button1, button2)
+                if len(time1) == 0:
+                    time1 = "Конечная"
+                if len(time2) == 0:
+                    time2 = 'Конечная'
+                remove_chat_buttons(message.chat.id)
+                bot.send_message(message.chat.id, f'Расписание на время - {time.strftime("%H:%M:%S")}\n\n\nСтанция - {i[0]}\nОт {i[0]} До Бауыржан Момышулы:\n{time1}\n\nОт {i[0]} До Райымбек Батыра:\n{time2}', reply_markup=keyboard)
+                telebot.types.ReplyKeyboardRemove()
+                return
+    except:
+        bot.send_message(message.chat.id, 'не получается получить станции')
+
     if message.text == 'Определенная станция':
         keyboard = telebot.types.ReplyKeyboardMarkup(True)
         keyboard.add('<- Назад')
         for i in get_time():
             keyboard.add(i[0])
         bot.reply_to(message, 'Выберите станцию',reply_markup=keyboard)
+        return
     
     if message.text == '<- Назад':
         keyboard = telebot.types.ReplyKeyboardMarkup(True)
@@ -116,12 +136,21 @@ def get_messages(message):
         keyboard.add(ff, new_button)
 
         bot.reply_to(message, "Выберите действие", reply_markup=keyboard)    
+        return
+
+    bot.send_message(message.chat.id, f'Я не знаю такой комманды как \n\n<strong>{message.text}</strong>', parse_mode='html')
 
 
-
-def save_image():
-    df = pd.read_csv('time.csv')
-    df_styled = df.style.background_gradient()
-    dfi.export(df_styled,"mytable.png")
+def remove_chat_buttons(chat_id: int, 
+                              msg_text: str = r"_It is not the message you are looking for\.\.\._"):
+    """Deletes buttons below the chat.
+    For now there are no way to delete kbd other than inline one, check
+        https://core.telegram.org/bots/api#updating-messages.
+    """
+    msg = bot.send_message(chat_id,
+                                 msg_text,
+                                 reply_markup=telebot.types.ReplyKeyboardRemove(),
+                                 parse_mode="MarkdownV2")
+    bot.delete_message(chat_id, msg.id)
 
 bot.infinity_polling()
